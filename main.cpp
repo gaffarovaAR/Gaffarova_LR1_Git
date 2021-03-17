@@ -18,7 +18,7 @@ void RenderScene(uint32_t w, uint32_t h, uint32_t num_samples, const Scene &scen
 {
     auto  background_color = float3(135/float(255), 206/float(255), 235/float(255));
     auto  film = std::make_unique<Film>(w, h, num_samples);
-    auto  tracer = std::make_unique<WhittedRT>(16, background_color);
+    auto  tracer = std::make_unique<WhittedRT>(background_color);
     float invWidth  = 1.0f / float(w);
     float invHeight = 1.0f / float(h);
 
@@ -31,7 +31,7 @@ void RenderScene(uint32_t w, uint32_t h, uint32_t num_samples, const Scene &scen
             for (int s = 0; s < num_samples; ++s)
             {
                 Ray ray = cam.genRay(w, h, x, h - y); //генерируем луч из камеры через текущий пиксель
-                pixel_color += tracer->TraceRay(ray, scene.objects, scene.lights, 0); //трассируем луч и получаем цвет
+                pixel_color += tracer->TraceRay(ray, scene.objects, scene.lights); //трассируем луч и получаем цвет
             }
             pixel_color /= film->num_samples;      // усредняем полученные цвета
             pixel_color *= cam.getExposureTime();  // умножаем на время экспонирования сенсора - выдержка виртуальной камеры
@@ -54,15 +54,15 @@ void create_scene()
 
     // Создание объектов
     //auto plane = std::make_shared<Plane>(float3(+0.0f, +1.0f, +0.0f), float3(0.0f, 1.0f, 0.0f), new IdealMirror(float3(0.3f, 0.3f, 0.3f)));
-    auto plane = std::make_shared<Plane>(float3(+0.0f, +0.0f, +0.0f), float3(+0.0f, +1.0f, +0.0f), new Defuse(float3(139 / float(255), 69 / float(255), 19 / float(255))));
+    auto plane = std::make_shared<Plane>(float3(+0.0f, +0.0f, +0.0f), float3(+0.0f, +1.0f, +0.0f), new Diffuse(float3(139 / float(255), 69 / float(255), 19 / float(255))));
     auto sphere1 = std::make_shared<Sphere>(float3(+0.0f, +2.0f, -10.0f), 2.0f, new IdealMirror(float3(255 / float(255), 140 / float(255), 0 / float(255))));
-    auto sphere2 = std::make_shared<Sphere>(float3(+3.0f, +3.0f, -15.0f), 3, new Defuse(float3(255 / float(255), 140 / float(255), 0.0f)));
+    auto sphere2 = std::make_shared<Sphere>(float3(+3.0f, +3.0f, -15.0f), 3, new Diffuse(float3(255 / float(255), 140 / float(255), 0.0f)));
     auto parallelepiped1 = std::make_shared<Parallelepiped>(float3(-3.0f, +0.0f, +10.0f), float3(-2.0f, +3.0f, +15.0f), new IdealMirror(float3(148 / float(255), 0.0f, 211 / float(255))));
-    auto parallelepiped2 = std::make_shared<Parallelepiped>(float3(-5.0f, +0.0f, -10.0f), float3(-2.0f, +7.0f, +5.0f), new Defuse(float3(148 / float(255), 0.0f, 211 / float(255))));
+    auto parallelepiped2 = std::make_shared<Parallelepiped>(float3(-5.0f, +0.0f, -10.0f), float3(-2.0f, +7.0f, +5.0f), new Diffuse(float3(148 / float(255), 0.0f, 211 / float(255))));
     auto triangle1 = std::make_shared<Triangle>(float3(-1.0f, +0.0f, +13.0f), float3(+1.0f, +0.0f, +15.0f), float3(+0.0f, +1.0f, +13.0f), new IdealMirror(float3(0.0f, 0.0f, 128 / float(255))));
-    auto triangle2 = std::make_shared<Triangle>(float3(+3.0f, +3.0f, +10.0f), float3(+4.0f, +0.0f, +15.0f), float3(+3.5f, +0.0f, +12.0f), new Defuse(float3(0.0f, 0.0f, 128 / float(255))));
-    auto square1 = std::make_shared<Square>(float3(+20.0f, +0.0f, -15.0f), float(+2.0f), new IdealMirror(float3(107 / float(255), 142 / float(255), 35 / float(255))));
-    auto square2 = std::make_shared<Square>(float3(+20.0f, +0.0f, -20.0f), float(+5.0f), new Defuse(float3(107 / float(255), 142 / float(255), 35 / float(255))));
+    auto triangle2 = std::make_shared<Triangle>(float3(+3.0f, +3.0f, +10.0f), float3(+4.0f, +0.0f, +15.0f), float3(+3.5f, +0.0f, +12.0f), new Diffuse(float3(0.0f, 0.0f, 128 / float(255))));
+    //auto square1 = std::make_shared<Square>(float3(+6.5f, +0.0f, +10.0f), float(+1.0f), new Defuse(float3(107 / float(255), 142 / float(255), 35 / float(255))));
+    auto square2 = std::make_shared<Square>(float3(+2.0f, +0.0f, +10.0f), float(+1.5f), new IdealMirror(float3(107 / float(255), 142 / float(255), 35 / float(255))));
     auto lightS1= std::make_shared<Sphere>(float3(+15.0f, +10.0f, +10.0f), 0.1f, new Light(float3(+1.0f, +1.0f, +1.0f)));
     auto lightS2 = std::make_shared<Sphere>(float3(-8.0f, +15.0f, +20.0f), 0.1f, new Light(float3(+1.0f, +1.0f, +1.0f)));
 
@@ -78,7 +78,7 @@ void create_scene()
     myScene.objects.push_back(parallelepiped2);
     myScene.objects.push_back(triangle1);
     myScene.objects.push_back(triangle2);
-    myScene.objects.push_back(square1);
+    //myScene.objects.push_back(square1);
     myScene.objects.push_back(square2);
 
     // Добавление источников на сцену

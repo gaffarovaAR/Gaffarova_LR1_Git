@@ -28,14 +28,13 @@ class WhittedRT
 {
 public:
 	WhittedRT() = default;
-	WhittedRT(const int& a_max_ray_depth, const float3& a_bg_color) : max_ray_depth(a_max_ray_depth), bg_color(a_bg_color) {};
+	WhittedRT( const float3& a_bg_color) : bg_color(a_bg_color) {};
 	~WhittedRT() = default;
 
-	float3 TraceRay(const Ray& ray, const std::vector<std::shared_ptr<GeoObject>>& geo, const std::vector<std::shared_ptr<LightSource>>& light, int depth);
+	float3 TraceRay(const Ray& ray, const std::vector<std::shared_ptr<GeoObject>>& geo, const std::vector<std::shared_ptr<LightSource>>& light);
 	bool ShadowRay(const Ray& ray, const std::vector<std::shared_ptr<GeoObject>>& geo);
 
 private:
-	int max_ray_depth; // максимальная глубина трассировки
 	float3 bg_color;   // цвет фона
 };
 
